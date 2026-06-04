@@ -16,6 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Save repository.md
+        run: |
+          echo "Creating repository-setup/repository.md..."
+          mkdir -p repository-setup
+          echo "${{ github.event.inputs.structure }}" > repository-setup/repository.md
+
       - name: Parse structure and create files
         run: |
           echo "Processing structure..."
@@ -53,7 +59,7 @@ jobs:
           git config user.email "github-actions@github.com"
 
           git add .
-          git commit -m "Auto-generated repository structure" || echo "No changes to commit"
+          git commit -m "Auto-generated repository structure and repository.md" || echo "No changes to commit"
 
       - name: Push changes
         run: |
