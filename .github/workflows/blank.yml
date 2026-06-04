@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      structure:
+        description: "Paste the repository structure in markdown format"
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Save repository.md
+        run: |
+          echo "Creating repository-setup/repository.md..."
+          mkdir -p repository-setup
+          echo "${{ github.event.inputs.structure }}" > repository-setup/repository.md
+
+      - name: Parse structure and create files
+        run: |
+          echo "Processing structure..."
+
+          # Save input to a temp file
+          echo "${{ github.event.inputs.structure }}" > structure.txt
+
+          # Read the structure line-by-line
+          while IFS= read -r line; do
+
+            # Remove leading tree characters
+            clean=$(echo "$line" | sed 's/[│├└─ ]//g')
+
+            # Skip empty lines
+            if [ -z "$clean" ]; then
+              continue
+            fi
+
+            # If line ends with '/', it's a directory
+            if [[ "$clean" == */ ]]; then
+              echo "Creating directory: $clean"
+              mkdir -p "$clean"
+            else
+              # Otherwise it's a file
+              echo "Creating file: $clean"
+              mkdir -p "$(dirname "$clean")"
+              touch "$clean"
+            fi
+
+          done < structure.txt
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add .
+          git commit -m "Auto-generated repository structure and repository.md" || echo "No changes to commit"
+
+      - name: Push changes
+        run: |
+          git push
