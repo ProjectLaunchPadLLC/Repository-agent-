@@ -1,0 +1,1 @@
+NON-OPERATIONAL QUARANTINE. Original repository tree is preserved under PAYLOAD. Do not execute, import, deploy, or expose archived material to runtime discovery.
